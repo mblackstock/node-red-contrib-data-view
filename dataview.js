@@ -2,8 +2,8 @@ module.exports = function(RED) {
     
     function DataView(config) {
         RED.nodes.createNode(this, config);
-        // this.active     = (config.active === null || typeof config.active === "undefined") || config.active;
-        // this.pass       = config.pass;
+        this.active = (config.active === null || typeof config.active === "undefined") || config.active;
+        this.passthru = config.passthru;
         
         var node = this;
         
@@ -27,22 +27,10 @@ module.exports = function(RED) {
 
         node.on("input", function(msg) {       
             var data;     
-            // if (this.active !== true) { return; }
-            
-            // if (node.pass) { node.send(msg); }
-            
+            if (this.active !== true) { return; }
+            if (node.passthru) { node.send(msg); }
             // Get the image from the location specified in the typedinput field
             data = msg.payload;
-
-            // RED.util.evaluateNodeProperty(node.data, node.dataType, node, msg, (err, value) => {
-            //     if (err) {
-            //         handleError(err, msg, "Invalid source");
-            //         return;
-            //     } else {
-            //         data = value;
-            //     }
-            // });
-
             sendDataToClient(data, msg);
         });
 

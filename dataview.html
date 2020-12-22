@@ -147,28 +147,24 @@
             chartGroup.setAttribute('id', "image-output-chart-" + id);
             $container.insertBefore(chartGroup, $container.lastChild.nextSibling)
             $chart = chartGroup
+
+            var margin = {
+                left: 30,
+                right:10,
+                bottom: 30,
+                top: 10
+            };
+
+            var width = DEFAULT_CHART_WIDTH - margin.left - margin.right;
+            var height = DEFAULT_CHART_HEIGHT - margin.top - margin.bottom;
+
+                    // chart group, convert to d3
+            let d3chart = d3.select($chart)
+                .attr("transform", `translate(${margin.left},${45+margin.top})`);
+                
         }
 
-        var margin = {
-            left: 30,
-            right:10,
-            bottom: 30,
-            top: 10
-        };
 
-        var width = DEFAULT_CHART_WIDTH - margin.left - margin.right;
-        var height = DEFAULT_CHART_HEIGHT - margin.top - margin.bottom;
-
-        // chart group, convert to d3
-        let d3chart = d3.select($chart)
-            .attr("transform", `translate(${margin.left},${45+margin.top})`);
-
-        // d3chart.append('rect')
-        //     .attr("x", 0)         // position the left of the rectangle
-        //     .attr("y", 0)          // position the top of the rectangle
-        //     .attr("height", DEFAULT_CHART_WIDTH)    // set the height
-        //     .attr("width", DEFAULT_CHART_HEIGHT)    // set the width
-        //     .style({fill:'white','stroke-width':3,stroke:'black'});
 
         // -- sample data we'll maintain
         var data = [{
@@ -212,7 +208,6 @@
         var yAxis = d3.svg.axis().scale(y)
             .orient("left").ticks(5);
 
-
         var valueline = d3.svg.line()
             .x(function (d) {
                 return x(d.date);
@@ -227,12 +222,12 @@
 
         d3chart.append("g") // Add the X Axis
             .attr("class", "axis")
-                .attr("transform", "translate(0," + height + ")")
-                .call(xAxis);
+            .attr("transform", `translate( 0,${height})`)
+            .call(xAxis);
 
         d3chart.append("g") // Add the Y Axis
             .attr("class", "axis")
-                .call(yAxis);
+            .call(yAxis);
 
         var axisStyle = {
             fill: 'none',
@@ -246,39 +241,6 @@
             
         d3.selectAll(".axis path")
             .style(axisStyle);
-
-        // i.onload = function () {
-        //     $img.setAttribute('height', node.width * i.height / i.width)
-        //     const bubbleId = $img.id.replace("img", "bubble");
-        //     const $bubble = document.getElementById(bubbleId)
-        //     let imgBbox = {}
-        //     imgBbox.x = 0;
-        //     imgBbox.y = 45;
-        //     imgBbox.width = node.width || DEFAULT_IMAGE_WIDTH;
-        //     imgBbox.height = parseInt(node.width * i.height / i.width);
-        //     const left = imgBbox.x
-        //     const top = imgBbox.y + 2
-        //     const right = imgBbox.x + imgBbox.width
-        //     const bottom = imgBbox.y + imgBbox.height
-        //     const points =
-        //         (left + 4) + "," + (top - 17) + " " +
-        //         (left + 4) + "," + top + " " +
-        //         right + "," + top + " " +
-        //         right + "," + bottom + " " +
-        //         left + "," + bottom + " " +
-        //         left + "," + (top - 21)
-        //     $bubble.setAttribute('points', points)
-        // }
-
-        // if (data.startsWith("http")) {
-        //     $img.setAttribute('href', data);
-        //     i.src = data;
-        // }
-        // else {
-        //     $img.setAttribute('href', "data:image/png;base64," + data);
-        //     i.src = "data:image/png;base64," + data;
-        // }
-        // draw the chart
     }
 
     RED.events.on("editor:save", redraw)
