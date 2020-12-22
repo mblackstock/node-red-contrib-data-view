@@ -8,7 +8,9 @@
         defaults: {
             name: { value: "" },
             active: { value: true },
-            passthru: { value: false }        },
+            passthru: { value: false },
+            outputs: {value: 0}
+        },
         inputs: 1,
         outputs: 0,
         icon: "font-awesome/fa-line-chart",
@@ -93,7 +95,7 @@
 
         $chart && $chart.remove()
         $bubble && $bubble.remove()
-        
+
         delete latestData[id]
         delete chartInfo[id]
         console.log('remove')
