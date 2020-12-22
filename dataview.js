@@ -30,7 +30,10 @@ module.exports = function(RED) {
             if (this.active !== true) { return; }
             if (node.passthru) { node.send(msg); }
             // Get the image from the location specified in the typedinput field
-            data = msg.payload;
+            data = {
+                value: msg.payload,
+                time: new Date()
+            }
             sendDataToClient(data, msg);
         });
 
