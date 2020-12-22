@@ -89,7 +89,7 @@
     const chartInfo = {}
 
     var remove = function(nodeid) {
-        const id = node.id;
+        const id = nodeid;
         const $chart = document.getElementById("data-view-output-chart-" + id)
         const $bubble = document.getElementById("data-view-output-bubble-" + id)
 
@@ -115,9 +115,6 @@
     }
 
     var render = function(id, data, node) {
-
-
-
         let $chart = document.getElementById("data-view-output-chart-" + id)
         if (!$chart) {
             const $container = document.getElementById(id)
@@ -190,7 +187,7 @@
                 return d.value;
             })]);
 
-            d3chart.append("path")          // Add the valueline path.
+            d3chart.append("path") 
                 .attr("class","chart-line")
                 .style({
                     stroke: 'steelblue',
@@ -199,12 +196,12 @@
                 })
                 .attr("d", valueLine(data));
 
-            d3chart.append("g") // Add the X Axis group
+            d3chart.append("g")
                 .attr("class", "x axis")
                 .attr("transform", `translate( 0, ${height})`)
                 .call(xAxis);
 
-            d3chart.append("g") // Add the Y Axis group
+            d3chart.append("g")
                 .attr("class", "y axis")
                 .call(yAxis);
 
@@ -254,6 +251,7 @@
     RED.events.on("editor:save", redraw)
 
     RED.comms.subscribe('data-view', function (event, data) {
+        debugger
         if (data.hasOwnProperty("data")) {
             // add new element to latestData
             if (!latestData[data.id]) {

@@ -10,7 +10,9 @@ module.exports = function(RED) {
         function sendDataToClient(data, msg) {
             var d = {
                 id:node.id,
-                data
+            };
+            if (data) {
+                d.data = data;
             }
             try {
                 RED.comms.publish("data-view", d);
@@ -26,10 +28,13 @@ module.exports = function(RED) {
         }
 
         node.on("input", function(msg) {       
-            var data;     
             if (this.active !== true) { return; }
+            if (msg.payload == null) {
+                // send message to delete chart
+                sendDataToClient(null, msg);
+                return;
+            }
             if (node.passthru) { node.send(msg); }
-            // Get the image from the location specified in the typedinput field
             data = {
                 value: msg.payload,
                 time: new Date()
