@@ -84,6 +84,8 @@
     // array of all data for each node
     const latestData = {}
 
+    const chartInfo = {}
+
     var remove = function(nodeid) {
         // const id = nodeid
         // const $img = document.getElementById("image-output-img-" + id)
@@ -96,7 +98,6 @@
     }
 
     var redraw = function(node) {
-        debugger;
         const id = node.id;
         // const $img = document.getElementById("image-output-img-" + id)
         // const $bubble = document.getElementById("image-output-bubble-" + id)
@@ -112,59 +113,6 @@
 
     var render = function(id, data, node) {
         console.log('render called')
-
-        // let i = new Image();
-        let $chart = document.getElementById("data-view-output-chart-" + id)
-        if (!$chart) {
-            const $container = document.getElementById(id)
-            if (!$container) { return }
-
-            const bubble = document.createElementNS("http://www.w3.org/2000/svg", 'polyline')
-            bubble.setAttribute('id', "data-view-output-bubble-" + id)
-            bubble.setAttribute('style', 'fill:#E8F0E8')
-            bubble.setAttribute('stroke', '#999999')
-            chartBB = {
-                x: 0,
-                y: 45,
-                width: DEFAULT_CHART_WIDTH,
-                height: DEFAULT_CHART_HEIGHT
-            }
-            const left = chartBB.x;
-            const top = chartBB.y + 2;
-            const right = chartBB.x + chartBB.width;
-            const bottom = chartBB.y + chartBB.height;
-            const points =
-                (left + 4) + "," + (top - 17) + " " +
-                (left + 4) + "," + top + " " +
-                right + "," + top + " " +
-                right + "," + bottom + " " +
-                left + "," + bottom + " " +
-                left + "," + (top - 21);
-            bubble.setAttribute('points', points)
-            $container.insertBefore(bubble, $container.lastChild.nextSibling);
-            $bubble = bubble;
-            const chartGroup = document.createElementNS("http://www.w3.org/2000/svg", 'g');
-            chartGroup.setAttribute('id', "image-output-chart-" + id);
-            $container.insertBefore(chartGroup, $container.lastChild.nextSibling)
-            $chart = chartGroup
-
-            var margin = {
-                left: 30,
-                right:10,
-                bottom: 30,
-                top: 10
-            };
-
-            var width = DEFAULT_CHART_WIDTH - margin.left - margin.right;
-            var height = DEFAULT_CHART_HEIGHT - margin.top - margin.bottom;
-
-                    // chart group, convert to d3
-            let d3chart = d3.select($chart)
-                .attr("transform", `translate(${margin.left},${45+margin.top})`);
-                
-        }
-
-
 
         // -- sample data we'll maintain
         var data = [{
@@ -191,56 +139,140 @@
             d.value = d.value;
         });
 
-        var x = d3.time.scale().range([0, width]);
-        var y = d3.scale.linear().range([height, 0]);
+        // example at https://www.d3-graph-gallery.com/graph/line_change_data.html
 
-        // Scale the range of the data
-        x.domain(d3.extent(data, function (d) {
-            return d.date;
-        }));
-        y.domain([0, d3.max(data, function (d) {
-            return d.value;
-        })]);
+        let $chart = document.getElementById("data-view-output-chart-" + id)
+        if (!$chart) {
+            const $container = document.getElementById(id)
+            if (!$container) { return }
 
-        var xAxis = d3.svg.axis().scale(x)
-            .orient("bottom").ticks(3);
+            // create the chart bubble
+            const bubble = document.createElementNS("http://www.w3.org/2000/svg", 'polyline')
+            bubble.setAttribute('id', "data-view-output-bubble-" + id)
+            bubble.setAttribute('style', 'fill:#E8F0E8')
+            bubble.setAttribute('stroke', '#999999')
+            chartBB = {
+                x: 0,
+                y: 45,
+                width: DEFAULT_CHART_WIDTH,
+                height: DEFAULT_CHART_HEIGHT
+            }
+            const left = chartBB.x;
+            const top = chartBB.y + 2;
+            const right = chartBB.x + chartBB.width;
+            const bottom = chartBB.y + chartBB.height;
+            const points =
+                (left + 4) + "," + (top - 17) + " " +
+                (left + 4) + "," + top + " " +
+                right + "," + top + " " +
+                right + "," + bottom + " " +
+                left + "," + bottom + " " +
+                left + "," + (top - 21);
+            bubble.setAttribute('points', points)
+            $container.insertBefore(bubble, $container.lastChild.nextSibling);
+            $bubble = bubble;
+
+            // add a group to hold the d3 chart
+            const chartGroup = document.createElementNS("http://www.w3.org/2000/svg", 'g');
+            chartGroup.setAttribute('id', "data-view-output-chart-" + id);
+            $container.insertBefore(chartGroup, $container.lastChild.nextSibling)
+
+            var margin = {
+                left: 30,
+                right:10,
+                bottom: 30,
+                top: 10
+            };
+
+            var width = DEFAULT_CHART_WIDTH - margin.left - margin.right;
+            var height = DEFAULT_CHART_HEIGHT - margin.top - margin.bottom;
+
+            // chart group, convert to d3, move into place
+            let d3chart = d3.select(chartGroup)
+                .attr("transform", `translate(${margin.left},${45 + margin.top})`);
+
+            let xScale = d3.time.scale().range([0, width]);
+            let xAxis = d3.svg.axis().scale(xScale).orient("bottom").ticks(3);
+
+            let yScale = d3.scale.linear().range([height, 0]);
+            let yAxis = d3.svg.axis().scale(yScale).orient("left").ticks(5);
+
+            let valueLine = d3.svg.line()
+                .x(function (d) {
+                    return xScale(d.date);
+                })
+                .y(function (d) {
+                    return yScale(d.value);
+                });
             
-        var yAxis = d3.svg.axis().scale(y)
-            .orient("left").ticks(5);
+            xScale.domain(d3.extent(data, function (d) {
+                return d.date;
+            }));
 
-        var valueline = d3.svg.line()
-            .x(function (d) {
-                return x(d.date);
-            })
-            .y(function (d) {
-                return y(d.value);
-            });
+            yScale.domain([0, d3.max(data, function (d) {
+                return d.value;
+            })]);
 
-        d3chart.append("path") // Add the valueline path.
-            .style({stroke: 'steelblue', 'stroke-width': 2,fill: 'none' })
-            .attr("d", valueline(data));
+            d3chart.append("path")          // Add the valueline path.
+                .attr("class","chart-line")
+                .style({
+                    stroke: 'steelblue',
+                    'stroke-width': 2,
+                    fill: 'none'
+                })
+                .attr("d", valueLine(data));
 
-        d3chart.append("g") // Add the X Axis
-            .attr("class", "axis")
-            .attr("transform", `translate( 0,${height})`)
-            .call(xAxis);
+            d3chart.append("g") // Add the X Axis group
+                .attr("class", "x axis")
+                .attr("transform", `translate( 0,${height})`)
+                .call(xAxis);
 
-        d3chart.append("g") // Add the Y Axis
-            .attr("class", "axis")
-            .call(yAxis);
+            d3chart.append("g") // Add the Y Axis group
+                .attr("class", "y axis")
+                .call(yAxis);
 
-        var axisStyle = {
-            fill: 'none',
-            stroke: 'grey',
-            'stroke-width': 1,
-            'shape-rendering': 'crispEdges'
-        };
+            $chart = chartGroup
 
-        d3.selectAll(".axis line")
-            .style(axisStyle);
-            
-        d3.selectAll(".axis path")
-            .style(axisStyle);
+            // save for updates
+            chartInfo[id] = {
+                xScale,
+                yScale,
+                xAxis,
+                yAxis,
+                valueLine
+            };
+
+            var axisStyle = {
+                fill: 'none',
+                stroke: 'grey',
+                'stroke-width': 1,
+                'shape-rendering': 'crispEdges'
+            };
+
+            d3chart.selectAll(".axis line")
+                .style(axisStyle);
+                
+            d3chart.selectAll(".axis path")
+                .style(axisStyle);
+        } else {
+            let d3chart = d3.select($chart).transition();
+            data[4].value = 5
+            let { xScale, yScale, xAxis, yAxis, valueLine } = chartInfo[id]
+
+            xScale.domain(d3.extent(data, function(d) { return d.date; }));
+            yScale.domain([0, d3.max(data, function(d) { return d.value; })]);
+
+            d3chart.select(".chart-line")   // change the line
+                .duration(750)
+                .attr("d", valueLine(data));
+            d3chart.select(".x.axis") // change the x axis
+                .duration(750)
+                .call(xAxis);
+            d3chart.select(".y.axis") // change the y axis
+                .duration(750)
+                .call(yAxis);
+        }
+
     }
 
     RED.events.on("editor:save", redraw)
