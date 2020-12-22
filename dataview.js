@@ -5,7 +5,9 @@ module.exports = function(RED) {
         this.active = (config.active === null || typeof config.active === "undefined") || config.active;
         this.passthru = config.passthru;
         
+        
         var node = this;
+        var errorCondition = false;
         
         function sendDataToClient(data, msg) {
             var d = {
@@ -23,18 +25,33 @@ module.exports = function(RED) {
         }
         
         function handleError(err, msg, statusText) {
-            node.status({ fill:"red", shape:"dot", text:statusText });
+            if (!errorCondition) {
+                node.status({ fill:"red", shape:"dot", text:statusText });
+                errorCondition = true;
+            }
             node.error(err, msg);
+        }
+
+        function clearError() {
+            if (errorCondition) {
+                node.status({});
+                errorCondition = false;
+            }
         }
 
         node.on("input", function(msg) {       
             if (this.active !== true) { return; }
-            if (msg.payload == null) {
-                // send message to delete chart
-                sendDataToClient(null, msg);
+            if (msg.payload == null) {      // null or undefined
+                clearError();
+                sendDataToClient(null, msg);    // delete chart
+                return;
+            }
+            if (typeof msg.payload !== 'number') {
+                handleError('payload is not a number', msg, 'payload is not a number');
                 return;
             }
             if (node.passthru) { node.send(msg); }
+            clearError();
             data = {
                 value: msg.payload,
                 time: new Date()
