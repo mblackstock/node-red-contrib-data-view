@@ -83,7 +83,7 @@
 
     // array of all data for each node
     const latestData = {}
-
+    // D3 UI functions needed for refresh
     const chartInfo = {}
 
     var remove = function(nodeid) {
@@ -94,25 +94,24 @@
         // $img && $img.remove()
         // $bubble && $bubble.remove()
         delete latestData[id]
+        delete chartInfo[id]
         console.log('remove')
     }
 
     var redraw = function(node) {
         const id = node.id;
-        // const $img = document.getElementById("image-output-img-" + id)
-        // const $bubble = document.getElementById("image-output-bubble-" + id)
+        const $chart = document.getElementById("data-view-output-chart-" + id)
+        const $bubble = document.getElementById("data-view-output-bubble-" + id)
 
-        // $img && $img.remove()
-        // $bubble && $bubble.remove()
+        $chart && $chart.remove()
+        $bubble && $bubble.remove()
 
         if (latestData[id]) {
             render(id, latestData[id], node)
         }
-        console.log('redraw')
     }
 
     var render = function(id, data, node) {
-        console.log('render called')
 
         // -- sample data we'll maintain
         var data = [{
