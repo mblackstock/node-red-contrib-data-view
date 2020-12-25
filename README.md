@@ -1,9 +1,9 @@
 # node-red-contrib-data-view
-Node-RED node to preview data in the flow editor with a simple line chart inside the Node-RED flow editor.  This node was inspired by the simple image output node `node-red-contrib-image-output`
+Node-RED node to preview data with a simple line chart inside the Node-RED flow editor.  This node was inspired by the simple image output node `node-red-contrib-image-output`.
 
-Currently the node expects the input `msg.payload` to contain a number.  The node will then create a line chart in the flow editor under the node displaying the value in time.
+Currently the node expects the input `msg.payload` to contain a number value.  The node will then create a line chart in the flow editor under the node displaying the values received over time.
 
-This node is a work in progress.  Over time, expect support for addition chart options, types and shapes of data supplied based on feedback.
+> NOTE: This node is a work in progress.  I expect to add additional chart options, chart types and shapes of data supplied based on feedback.
 
 ## Installation
 Either use the Editor - Menu - Manage Palette - Install option, or run the following npm command in your Node-RED user directory (typically `~/.node-red`):
