@@ -5,7 +5,6 @@ module.exports = function(RED) {
         this.active = (config.active === null || typeof config.active === "undefined") || config.active;
         this.passthru = config.passthru;
         
-        
         var node = this;
         var errorCondition = false;
         
