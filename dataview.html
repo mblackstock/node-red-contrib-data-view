@@ -47,6 +47,7 @@
                 },
                 active: { value: true },
                 passthru: { value: false },
+                hide: {value: true},
                 outputs: { value: 0 }
             },
             inputs: 1,
@@ -83,6 +84,7 @@
                             RED.nodes.dirty(true);
                             RED.history.push(historyEvent);
                             RED.view.redraw();
+                            redraw(node);
                             if (xhr.status == 200) {
                                 RED.notify("Successfully " + resp + ": " + label, "success");
                             }
@@ -127,31 +129,28 @@
 
         // array of all data for each node
         const latestData = {}
-        // D3 UI functions needed for refresh
+        // ui state and functions for updates
         const chartInfo = {}
 
-        var remove = function (nodeid) {
-            const id = nodeid;
-            const $chart = document.getElementById("data-view-output-chart-" + id)
-            const $bubble = document.getElementById("data-view-output-bubble-" + id)
+        var remove = function(id) {
+            const $chart = document.getElementById(`data-view-output-chart-${id}`)
+            const $bubble = document.getElementById(`data-view-output-bubble-${id}`)
 
             $chart && $chart.remove()
             $bubble && $bubble.remove()
+        }
+
+        var reset = function (id) {
+            remove(id)
 
             delete latestData[id]
             delete chartInfo[id]
-            console.log('remove')
         }
 
         var redraw = function (node) {
-            const id = node.id;
-            const $chart = document.getElementById("data-view-output-chart-" + id)
-            const $bubble = document.getElementById("data-view-output-bubble-" + id)
-
-            $chart && $chart.remove()
-            $bubble && $bubble.remove()
-
-            if (latestData[id]) {
+            let id = node.id
+            remove(id);
+            if (latestData[id] && (node.active || !node.hide)) {
                 render(id, latestData[id], node)
             }
         }
@@ -164,7 +163,7 @@
 
                 // create the chart bubble
                 const bubble = document.createElementNS("http://www.w3.org/2000/svg", 'polyline')
-                bubble.setAttribute('id', "data-view-output-bubble-" + id)
+                bubble.setAttribute('id', `data-view-output-bubble-${id}`)
                 bubble.setAttribute('style', 'fill:#E8F0E8')
                 bubble.setAttribute('stroke', '#999999')
 
@@ -184,19 +183,16 @@
                 const bottom = chartBB.y + chartBB.height;
 
                 const points =
-                    (left + 4) + "," + (top - 17) + " " +
-                    (left + 4) + "," + top + " " +
-                    right + "," + top + " " +
-                    right + "," + bottom + " " +
-                    left + "," + bottom + " " +
-                    left + "," + (top - 21);
+                    `${left + 4},${top - 17} ${left + 4},${top} ` +
+                    `${right},${top} ${right},${bottom} ` +
+                    `${left},${bottom} ${left},${top - 21}`;
 
                 bubble.setAttribute('points', points)
                 $container.insertBefore(bubble, $container.lastChild.nextSibling);
 
                 // add a group to hold the d3 chart
                 const chartGroup = document.createElementNS("http://www.w3.org/2000/svg", 'g');
-                chartGroup.setAttribute('id', "data-view-output-chart-" + id);
+                chartGroup.setAttribute('id', `data-view-output-chart-${id}`);
                 $container.insertBefore(chartGroup, $container.lastChild.nextSibling)
 
                 var margin = CHART_MARGINS;
@@ -289,7 +285,7 @@
                 render(data.id, latestData[data.id], node)
             }
             else {
-                remove(data.id);
+                reset(data.id);
             }
         })
     })();
@@ -297,17 +293,20 @@
 
 <script type="text/html" data-template-name="data-view">
     <div class="form-row">
-        <label for="node-input-height"><i class="fa fa-arrows-v"></i> Height</label>
-        <input type="number" id="node-input-height">
-    </div>
-    <div class="form-row">
-        <label for="node-input-width"><i class="fa fa-arrows-h"></i> Width</label>
-        <input type="number" id="node-input-width">
+        <label for="node-input-height"><i class="fa fa-arrows-v"></i>&nbsp;Height</label>
+        <input type="number" id="node-input-height" style="width:125px !important">
+        &nbsp;&nbsp;<i class="fa fa-arrows-h"></i>&nbsp;Width</label>
+        <input type="number" id="node-input-width" style="width:125px !important">
     </div>
     <div class="form-row">
         <label for="node-input-points"><i class="fa fa-line-chart"></i> Line points</label>
         <input type="number" id="node-input-points">
     </div>
+    <div class="form-row">
+        <label>&nbsp;</label>
+        <input type="checkbox" id="node-input-hide" style="display:inline-block; width:auto; vertical-align:top;">
+        <label for="node-input-hide" style="width:70%;"> Hide chart on deactivate</label>
+    </div> 
     <div class="form-row">
         <label>&nbsp;</label>
         <input type="checkbox" id="node-input-passthru" style="display:inline-block; width:auto; vertical-align:top;">
@@ -327,10 +326,12 @@
     <p><strong>Height:</strong><br/>
     The height (in pixels) of the chart.</p>  
     <p><strong>Width:</strong><br/>
-    The width (in pixels) of the chart.</p>  
+    The width (in pixels) of the chart.</p>
     <p><strong>Line points:</strong><br/>
     The number of points to display in the chart before they are dropped.</p>          
-    <strong>Allow data passthrough:</strong><br/>
+    <p><strong>Hide chart on deactivate:</strong><br/>
+    Hide the chart when node is deactivated.</p>
+    <p><strong>Allow data passthrough:</strong><br/>
     When selected this adds an output wire to the node in order to pass the original message through to a following node.
     This performs better than forking the wires, however it does remove the enable/disable button.
     </p>
