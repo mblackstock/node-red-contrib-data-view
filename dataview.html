@@ -196,18 +196,26 @@
 
                 let margin = CHART_MARGINS;
 
-                let width = chartWidth - margin.left - margin.right;
                 let height = chartHeight - margin.top - margin.bottom;
 
                 // chart group, convert to d3, move into place
-                let d3chart = d3.select(chartGroup)
-                    .attr("transform", `translate(${margin.left},${45 + margin.top})`);
+                let d3chart = d3.select(chartGroup);
+                let yScale = d3.scale.linear().range([height, 0]);
+                let yAxis = d3.svg.axis().scale(yScale).orient("left").ticks(5);
+                yScale.domain([d3.min(data, d => d.value), d3.max(data, d => d.value)]);
+
+                let yAxisElement = d3chart.append("g")
+                    .attr("class", "y axis")
+                    .call(yAxis);
+                
+                let axisWidth = yAxisElement.node().getBBox().width;
+                let leftMargin = Math.max(margin.left, axisWidth+4);
+                let width = chartWidth - leftMargin - margin.right;
+
+                d3chart.attr("transform", `translate(${leftMargin},${45 + margin.top})`);
 
                 let xScale = d3.time.scale().range([0, width]);
                 let xAxis = d3.svg.axis().scale(xScale).orient("bottom").ticks(3);
-
-                let yScale = d3.scale.linear().range([height, 0]);
-                let yAxis = d3.svg.axis().scale(yScale).orient("left").ticks(5);
 
                 let valueLine = d3.svg.line()
                     .x(function (d) {
@@ -218,7 +226,6 @@
                     });
 
                 xScale.domain(d3.extent(data, d => d.time));
-                yScale.domain([d3.min(data, d => d.value), d3.max(data, d => d.value)]);
 
                 d3chart.append("path")
                     .attr("class", "chart-line")
@@ -230,10 +237,6 @@
                     .attr("transform", `translate( 0, ${height})`)
                     .call(xAxis);
 
-                d3chart.append("g")
-                    .attr("class", "y axis")
-                    .call(yAxis);
-
                 d3chart.selectAll(".axis line")
                     .style(AXIS_STYLE);
 
@@ -241,30 +244,29 @@
                     .style(AXIS_STYLE);
 
                 $chart = chartGroup
-                let previousWidth = chartWidth;
 
                 // save for updates to the chart
-                chartInfo[id] = { xScale, yScale, xAxis, yAxis, valueLine, previousWidth };
+                chartInfo[id] = { xScale, yScale, xAxis, yAxis, valueLine, width };
             } else {
                 // updating chart
                 let d3chart = d3.select($chart).transition();
-                let { xScale, yScale, xAxis, yAxis, valueLine, previousWidth } = chartInfo[id];
+                let { xScale, yScale, xAxis, yAxis, valueLine, width } = chartInfo[id];
 
                 xScale.domain(d3.extent(data, d => d.time));
                 yScale.domain([d3.min(data, d => d.value), d3.max(data, d => d.value)]);
 
-                d3chart.select(".y.axis") // change the y axis
+                let yAxisElement = d3chart.select(".y.axis") // change the y axis
                     .duration(200)
                     .call(yAxis);
 
                 let margin = CHART_MARGINS;
 
                 // get the width of the y-axis in case we need room
-                let axisWidth = d3chart.select('.y.axis').node().getBBox().width;
+                let axisWidth = yAxisElement.node().getBBox().width;
                 let leftMargin = Math.max(margin.left, axisWidth+4);
                 let newWidth = chartWidth - leftMargin - margin.right;
 
-                if (newWidth != previousWidth) {
+                if (newWidth != width) {
                     // adjust scaling to new width
                     xScale.range([0, newWidth]);
                     valueLine.x(function (d) {
@@ -273,7 +275,7 @@
 
                     // move chart over for room
                     d3chart.attr("transform", `translate(${leftMargin},${45 + margin.top})`);
-                    chartInfo[id].previousWidth = newWidth;
+                    chartInfo[id].width = newWidth;
                 }
 
                 d3chart.select(".chart-line")
