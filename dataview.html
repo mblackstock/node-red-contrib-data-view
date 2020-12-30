@@ -156,7 +156,10 @@
         }
 
         var render = function (id, data, node) {
-            let $chart = document.getElementById("data-view-output-chart-" + id)
+            let $chart = document.getElementById("data-view-output-chart-" + id);
+            let chartWidth = node.width ? parseInt(node.width) : DEFAULT_CHART_WIDTH;
+            let chartHeight = node.height ? parseInt(node.height) : DEFAULT_CHART_HEIGHT;
+
             if (!$chart) {
                 const $container = document.getElementById(id)
                 if (!$container) { return }
@@ -166,9 +169,6 @@
                 bubble.setAttribute('id', `data-view-output-bubble-${id}`)
                 bubble.setAttribute('style', 'fill:#E8F0E8')
                 bubble.setAttribute('stroke', '#999999')
-
-                let chartWidth = node.width ? parseInt(node.width) : DEFAULT_CHART_WIDTH;
-                let chartHeight = node.height ? parseInt(node.height) : DEFAULT_CHART_HEIGHT;
 
                 chartBB = {
                     x: 0,
@@ -193,12 +193,12 @@
                 // add a group to hold the d3 chart
                 const chartGroup = document.createElementNS("http://www.w3.org/2000/svg", 'g');
                 chartGroup.setAttribute('id', `data-view-output-chart-${id}`);
-                $container.insertBefore(chartGroup, $container.lastChild.nextSibling)
+                $container.insertBefore(chartGroup, $container.lastChild.nextSibling);
 
-                var margin = CHART_MARGINS;
+                let margin = CHART_MARGINS;
 
-                var width = chartWidth - margin.left - margin.right;
-                var height = chartHeight - margin.top - margin.bottom;
+                let width = chartWidth - margin.left - margin.right;
+                let height = chartHeight - margin.top - margin.bottom;
 
                 // chart group, convert to d3, move into place
                 let d3chart = d3.select(chartGroup)
@@ -236,9 +236,10 @@
                     .call(yAxis);
 
                 $chart = chartGroup
+                let previousWidth = chartWidth;
 
-                // save for updates
-                chartInfo[id] = { xScale, yScale, xAxis, yAxis, valueLine };
+                // save for updates to the chart
+                chartInfo[id] = { xScale, yScale, xAxis, yAxis, valueLine, previousWidth };
 
                 d3chart.selectAll(".axis line")
                     .style(AXIS_STYLE);
@@ -248,20 +249,41 @@
             } else {
                 // updating chart
                 let d3chart = d3.select($chart).transition();
-                let { xScale, yScale, xAxis, yAxis, valueLine } = chartInfo[id];
+                let { xScale, yScale, xAxis, yAxis, valueLine, previousWidth } = chartInfo[id];
 
                 xScale.domain(d3.extent(data, d => d.time));
                 yScale.domain([d3.min(data, d => d.value), d3.max(data, d => d.value)]);
 
-                d3chart.select(".chart-line")   // change the line
-                    .duration(200)
-                    .attr("d", valueLine(data));
-                d3chart.select(".x.axis") // change the x axis
-                    .duration(200)
-                    .call(xAxis);
                 d3chart.select(".y.axis") // change the y axis
                     .duration(200)
                     .call(yAxis);
+
+                let margin = CHART_MARGINS;
+
+                // get the width of the y-axis in case we need room
+                let axisWidth = d3chart.select('.y.axis').node().getBBox().width;
+                let leftMargin = Math.max(margin.left, axisWidth+4);
+                let newWidth = chartWidth - leftMargin - margin.right;
+
+                if (newWidth != previousWidth) {
+                    // adjust scaling to new width
+                    xScale.range([0, newWidth]);
+                    valueLine.x(function (d) {
+                        return xScale(d.time);
+                    });
+
+                    // move chart over for room
+                    d3chart.attr("transform", `translate(${leftMargin},${45 + margin.top})`);
+                    chartInfo[id].previousWidth = newWidth;
+                }
+
+                d3chart.select(".chart-line")   // change the line
+                    .duration(200)
+                    .attr("d", valueLine(data));
+
+                d3chart.select(".x.axis") // change the x axis
+                    .duration(200)
+                    .call(xAxis);
             }
         }
 
