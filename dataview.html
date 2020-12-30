@@ -128,30 +128,29 @@
         });
 
         // array of all data for each node
-        const latestData = {}
+        const latestData = {};
         // ui state and functions for updates
-        const chartInfo = {}
+        const chartInfo = {};
 
         var remove = function(id) {
-            const $chart = document.getElementById(`data-view-output-chart-${id}`)
-            const $bubble = document.getElementById(`data-view-output-bubble-${id}`)
+            const $chart = document.getElementById(`data-view-output-chart-${id}`);
+            const $bubble = document.getElementById(`data-view-output-bubble-${id}`);
 
-            $chart && $chart.remove()
-            $bubble && $bubble.remove()
+            $chart && $chart.remove();
+            $bubble && $bubble.remove();
         }
 
         var reset = function (id) {
             remove(id)
-
-            delete latestData[id]
-            delete chartInfo[id]
+            delete latestData[id];
+            delete chartInfo[id];
         }
 
         var redraw = function (node) {
             let id = node.id
             remove(id);
             if (latestData[id] && (node.active || !node.hide)) {
-                render(id, latestData[id], node)
+                render(id, latestData[id], node);
             }
         }
 
@@ -235,17 +234,17 @@
                     .attr("class", "y axis")
                     .call(yAxis);
 
-                $chart = chartGroup
-                let previousWidth = chartWidth;
-
-                // save for updates to the chart
-                chartInfo[id] = { xScale, yScale, xAxis, yAxis, valueLine, previousWidth };
-
                 d3chart.selectAll(".axis line")
                     .style(AXIS_STYLE);
 
                 d3chart.selectAll(".axis path")
                     .style(AXIS_STYLE);
+
+                $chart = chartGroup
+                let previousWidth = chartWidth;
+
+                // save for updates to the chart
+                chartInfo[id] = { xScale, yScale, xAxis, yAxis, valueLine, previousWidth };
             } else {
                 // updating chart
                 let d3chart = d3.select($chart).transition();
@@ -277,11 +276,11 @@
                     chartInfo[id].previousWidth = newWidth;
                 }
 
-                d3chart.select(".chart-line")   // change the line
+                d3chart.select(".chart-line")
                     .duration(200)
                     .attr("d", valueLine(data));
 
-                d3chart.select(".x.axis") // change the x axis
+                d3chart.select(".x.axis")
                     .duration(200)
                     .call(xAxis);
             }
