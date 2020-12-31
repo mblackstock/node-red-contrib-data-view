@@ -25,6 +25,9 @@ The following example demonstrates how to inject numbers into the node to genera
 This example flow is also available via the *'Import'* menu in the Node-RED flow editor.
 
 ## Node configuration
+### Property
+Choose the message property containing the value to plot, `msg.payload` by default.
+
 ### Height
 The height (in pixels) of the chart.
 

@@ -30,6 +30,12 @@
             color: '#88A882',
             defaults: {
                 name: { value: "" },
+                property: {
+                    value: "payload",
+                    required: true,
+                    validate: RED.validators.typedInput("fieldType")
+                },
+                fieldType: {value:"msg"},
                 width: {
                     value: DEFAULT_CHART_WIDTH,
                     required: true,
@@ -110,9 +116,12 @@
             },
             oneditprepare: function () {
                 var that = this;
-                $('#node-input-width').val(this.width || DEFAULT_CHART_WIDTH);
-                $('#node-input-height').val(this.height || DEFAULT_CHART_HEIGHT);
-                $('#node-input-points').val(this.points || DEFAULT_CHART_POINTS);
+                $('#node-input-property').typedInput({
+                    default: 'msg',
+                    typeField: $("#node-input-fieldType"),
+                    types: ['msg']
+                });
+                $('#node-input-property').typedInput('value', this.property || 'payload');
 
                 if ($("#node-input-passthru").is(":checked")) { that.outputs = 1; }
                 $("#node-input-passthru").change(function () {
@@ -316,6 +325,11 @@
 
 <script type="text/html" data-template-name="data-view">
     <div class="form-row">
+        <label style="padding-top: 8px" for="node-input-property"><i class="fa fa-ellipsis-h"></i> Property</label>
+        <input type="text" id="node-input-property" style="width:70%">
+        <input type="hidden" id="node-input-fieldType">
+    </div>
+    <div class="form-row">
         <label for="node-input-height"><i class="fa fa-arrows-v"></i>&nbsp;Height</label>
         <input type="number" id="node-input-height" style="width:125px !important">
         &nbsp;&nbsp;<i class="fa fa-arrows-h"></i>&nbsp;Width</label>
@@ -343,9 +357,9 @@
 
 <script type="text/html" data-help-name="data-view">
     <p>Simple chart node useful for previewing data over time right in the flow.
-    The node expects <code>msg.payload</code> to be a number to plot.  The node will then
-    draw a line chart containing values received over time in the flow.  To clear
-    the graph, send an empty or null payload.
+    The node expects the chosen message property, <code>msg.payload</code> by default,
+    to be a number to plot.  The node will then draw a line chart containing values 
+    received over time in the flow.  To clear the graph, send an empty or null payload.
     <p><strong>Height:</strong><br/>
     The height (in pixels) of the chart.</p>  
     <p><strong>Width:</strong><br/>

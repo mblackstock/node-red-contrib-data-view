@@ -4,6 +4,7 @@ module.exports = function(RED) {
         RED.nodes.createNode(this, config);
         this.active = (config.active === null || typeof config.active === "undefined") || config.active;
         this.passthru = config.passthru;
+        this.property = config.property || 'payload';
         
         var node = this;
         var errorCondition = false;
@@ -40,19 +41,21 @@ module.exports = function(RED) {
 
         node.on("input", function(msg) {       
             if (this.active !== true) { return; }
-            if (msg.payload == null) {      // null or undefined
+            let value = msg[node.property];
+
+            if (value == null) {      // null or undefined
                 clearError();
                 sendDataToClient(null, msg);    // delete chart
                 return;
             }
-            if (typeof msg.payload !== 'number') {
-                handleError('payload is not a number', msg, 'payload is not a number');
+            if (typeof value !== 'number') {
+                handleError(`msg.${node.property} is not a number`, msg, `msg.${node.property} is not a number`);
                 return;
             }
             if (node.passthru) { node.send(msg); }
             clearError();
             data = {
-                value: msg.payload,
+                value,
                 time: new Date()
             }
             sendDataToClient(data, msg);
