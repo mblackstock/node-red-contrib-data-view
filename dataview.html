@@ -144,9 +144,11 @@
         var remove = function(id) {
             const $chart = document.getElementById(`data-view-output-chart-${id}`);
             const $bubble = document.getElementById(`data-view-output-bubble-${id}`);
+            const $reset = document.getElementById(`data-view-output-reset-${id}`);
 
             $chart && $chart.remove();
             $bubble && $bubble.remove();
+            $reset && $reset.remove();
         }
 
         var reset = function (id) {
@@ -205,9 +207,27 @@
 
                 let margin = CHART_MARGINS;
 
+                // add a button to reset chart
+                const resetGroup = document.createElementNS("http://www.w3.org/2000/svg", 'g');
+                resetGroup.setAttribute('id', `data-view-output-reset-${id}`);
+                $container.insertBefore(resetGroup, $container.lastChild.nextSibling);
+
+                let d3Reset = d3.select(resetGroup)
+                    .attr('class','delete')
+                    .attr('transform', `translate(${chartWidth-margin.right-10},70)`)
+                    .on('click', () => {
+                        reset(id);
+                    });
+                d3Reset.append('text').style({
+                    'font-family':'FontAwesome',
+                    'font-weight': 'normal',
+                    'font-size':'14px',
+                    'fill':'#999',
+                    'stroke':'none'}).text('\uf1f8');
+
                 let height = chartHeight - margin.top - margin.bottom;
 
-                // chart group, convert to d3, move into place
+                // chart group
                 let d3chart = d3.select(chartGroup);
                 let yScale = d3.scale.linear().range([height, 0]);
                 let yAxis = d3.svg.axis().scale(yScale).orient("left").ticks(5);
