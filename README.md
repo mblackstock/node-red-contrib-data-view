@@ -14,7 +14,7 @@ npm i node-red-contrib-data-view
 ## Node usage
 This node can be used to view simple line charts inside the Node-RED flow editor as illustrated below.
 
-![Example](https://user-images.githubusercontent.com/707704/103112409-1f14b480-460a-11eb-8695-84db53fc88c9.png)
+![Example](https://user-images.githubusercontent.com/707704/103465930-15b7d600-4cf5-11eb-808d-9bddcdf68c25.png)
 
 The following example demonstrates how to inject numbers into the node to generate charts. To clear a chart, send a null or undefined <code>msg.payload</code> value as shown, or click on the trash button in the top right corner.
 
