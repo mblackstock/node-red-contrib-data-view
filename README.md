@@ -1,7 +1,7 @@
 # node-red-contrib-data-view
 Node-RED node to preview data with a simple line chart inside the Node-RED flow editor. This node was inspired by the simple image preview node `node-red-contrib-image-output`.
 
-Currently the node expects the input `msg.payload` to contain a number value. The node will then create a line chart in the flow editor under the node displaying values received over time. 
+The node expects the input `msg.payload` or other specified property of the input message to contain a number value. The node will then generate a line chart in the flow editor under the node displaying values received over time.
 
 > NOTE: This node is a work in progress. The intended use case for this node is for simple demos and debugging. The state of the chart is currently maintained in the client, so that refreshing the page, or opening a new view on the flow will cause the chart to reset. I expect to add additional chart options, chart types and support different shapes of data. Feedback is welcome.
 
@@ -14,7 +14,7 @@ npm i node-red-contrib-data-view
 ## Node usage
 This node can be used to view simple line charts inside the Node-RED flow editor as illustrated below.
 
-![Example](https://user-images.githubusercontent.com/707704/103465930-15b7d600-4cf5-11eb-808d-9bddcdf68c25.png)
+![Example](https://user-images.githubusercontent.com/707704/103112409-1f14b480-460a-11eb-8695-84db53fc88c9.png)
 
 The following example demonstrates how to inject numbers into the node to generate charts. To clear a chart, send a null or undefined <code>msg.payload</code> value as shown, or click on the trash button in the top right corner.
 
